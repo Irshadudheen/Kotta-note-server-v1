@@ -42,8 +42,8 @@ export const MESSAGES = {
 export const USER_ROLES = {
     USER: 'user',
     ADMIN: 'admin',
-    EMPLOYER: 'employer',
-    EMPLOYEE: 'employee',
+    TEACHER: 'teacher',
+    STUDENT: 'student',
     // add more roles here
 }
 
