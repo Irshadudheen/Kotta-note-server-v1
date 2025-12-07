@@ -32,7 +32,7 @@ app.use('/api/v1', routes);
 app.get('/', (req, res) => {
   res.status(HTTP_STATUS.OK).json({
     success: true,
-    message: 'Welcome to IqraHire Server API',
+    message: 'Welcome to Kotta Server API',
     version: '1.0.0',
     documentation: '/api/health',
   });
