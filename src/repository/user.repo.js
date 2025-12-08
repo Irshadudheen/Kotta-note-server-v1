@@ -8,15 +8,19 @@ class UserRepository {
    */
   async createUser(userData) {
     try {
-      const user = new User(userData);
-      const savedUser = await user.save();
- 
-      return {
-        success: true,
-        data: savedUser,
-      };
+      
+       const updatedUser = await User.findOneAndUpdate(
+      { email: userData.email },   // condition to check existing user
+      { $set: userData },          // update / insert these fields
+      { new: true, upsert: true }  // new → returns updated doc, upsert → create if not exists
+    );
+    console.log(updatedUser,'the updated')
+    return {
+      success: true,
+      data: updatedUser,
+    };
     } catch (error) {
-    
+    console.log(error,'the error')
       if (error.code === 11000) {
         return {
           success: false,

@@ -22,21 +22,9 @@ class AuthController {
    */
   async register(req, res) {
     try {
-      const { authType, userType, phone, googleToken } = req.body;
+      const { authType, userType, googleToken } = req.body;
       let email, googleId;
       // Check for duplicate users
-
-
-      if (phone) {
-        const existingPhoneResult = await userRepository.findByPhoneAndUserType(phone);
-        if (existingPhoneResult.success && existingPhoneResult.data) {
-          return res.status(HTTP_STATUS.BAD_REQUEST).json({
-            success: false,
-            message: MESSAGES.ERROR.DUPLICATE_PHONE,
-          });
-        }
-      }
-
 
       if (authType === AUTH_TYPES.GOOGLE) {
         // Validate Google authentication
@@ -53,14 +41,29 @@ class AuthController {
           googleId = tokenResult.data.uid;
           email = tokenResult.data.email;
         }
-
+        console.log(email,'the email in register')
         if (email) {
           const existingEmailResult = await userRepository.findByEmailAndUserType(email,userType);
           if (existingEmailResult.success && existingEmailResult.data) {
-            return res.status(HTTP_STATUS.BAD_REQUEST).json({
-              success: false,
-              message: MESSAGES.ERROR.DUPLICATE_EMAIL,
-            });
+           // Generate tokens
+        const tokens = generateTokenPair({
+          id: existingEmailResult.data._id,
+          userType: existingEmailResult.data.userType,
+          authType: existingEmailResult.data.authType
+        });
+
+        // Remove password from response
+        const userResponse = existingEmailResult.data.toObject();
+        delete userResponse.password;
+
+        return res.status(HTTP_STATUS.OK).json({
+          success: true,
+          message: MESSAGES.SUCCESS.USER_REGISTERED,
+          data: {
+            user: userResponse,
+            ...tokens,
+          },
+        });
           }
         }
 
@@ -102,39 +105,7 @@ class AuthController {
           },
         });
 
-      } else if (authType === AUTH_TYPES.PHONE) {
-        // For phone auth, send OTP first
-        const otp = generateOtp();
-        const otpResult = await otpRepository.createOtp(phone, otp);
-        
-        if (!otpResult.success) {
-          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: MESSAGES.ERROR.OTP_NOT_SENT,
-          });
-        }
-
-        // Send OTP via SMS
-        try {
-          const message = generateRegistrationOtpMessage(otp);
-       
-        } catch (smsError) {
-          console.error('SMS sending failed:', smsError);
-          return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-            success: false,
-            message: MESSAGES.ERROR.OTP_NOT_SENT,
-          });
-        }
-
-        return res.status(HTTP_STATUS.OK).json({
-          success: true,
-          message: MESSAGES.SUCCESS.OTP_SENT,
-          data: {
-            phone,
-            message: 'OTP sent successfully. Please verify to complete registration.'
-          },
-        });
-      }
+      } 
 
     } catch (error) {
       console.error('Registration error:', error);

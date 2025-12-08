@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
   userType: {
     type: String,
     required: [true, 'User Type is required'],
-    enum: ['employee', 'employer', 'admin'],
+    enum: ['student', 'teacher', 'admin'],
     trim: true,
     maxlength: [50, 'User type cannot exceed 50 characters'],
   },

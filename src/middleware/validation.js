@@ -37,7 +37,7 @@ const validateUserRegistration = [
     .trim()
     .notEmpty()
     .withMessage('User Type is required')
-    .isIn(['employee', 'employer', 'admin'])
+    .isIn(['student', 'teacher', 'admin'])
     .withMessage('User Type must be either "employee", "employer", or "admin"'),
   
   body('email')
