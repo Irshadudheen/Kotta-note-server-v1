@@ -23,7 +23,7 @@ class AuthController {
   async register(req, res) {
     try {
       const { authType, userType, googleToken } = req.body;
-      let email, googleId;
+      let email, googleId, name;
       // Check for duplicate users
 
       if (authType === AUTH_TYPES.GOOGLE) {
@@ -37,9 +37,10 @@ class AuthController {
               message: MESSAGES.ERROR.GOOGLE_AUTH_FAILED,
             });
           }
-
+          console.log(tokenResult,'the token result in register')
           googleId = tokenResult.data.uid;
           email = tokenResult.data.email;
+          name = tokenResult.data.name;
         }
         console.log(email,'the email in register')
         if (email) {
@@ -72,6 +73,7 @@ class AuthController {
           authType,
           userType,
           email,
+          name,
           googleId,
           isEmailVerified: true
         };

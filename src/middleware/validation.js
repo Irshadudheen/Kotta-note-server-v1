@@ -32,13 +32,14 @@ const validateUserRegistration = [
     .withMessage('Auth Type is required')
     .isIn(['google', 'phone'])
     .withMessage('Auth Type must be either "google" or "phone"'),
+    body('name').trim().notEmpty().withMessage('Name is required'),
   
   body('userType')
     .trim()
     .notEmpty()
     .withMessage('User Type is required')
     .isIn(['student', 'teacher', 'admin'])
-    .withMessage('User Type must be either "employee", "employer", or "admin"'),
+    .withMessage('User Type must be either "student", "teacher", or "admin"'),
   
   body('email')
     .optional()
