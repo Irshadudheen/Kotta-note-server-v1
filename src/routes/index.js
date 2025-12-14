@@ -1,6 +1,6 @@
 import express from 'express';
 import authRoutes from './auth.route.js';
-
+import noteRoutes from './note.route.js'
 
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router.get('/health', (req, res) => {
 
 // API routes
 router.use('/auth', authRoutes);
+router.use('/notes', noteRoutes)
 
 router.use('*', (req, res) => {
   res.status(404).json({

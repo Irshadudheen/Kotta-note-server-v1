@@ -94,7 +94,7 @@ const requestLogSchema = new mongoose.Schema({
   },
   userType: {
     type: String,
-    enum: ['employee', 'employer', 'admin', 'authenticated', 'anonymous'],
+    enum: ['student', 'teacher', 'admin','superadmin', 'authenticated', 'anonymous'],
     default: 'anonymous'
   },
   

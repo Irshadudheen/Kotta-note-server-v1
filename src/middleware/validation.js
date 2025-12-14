@@ -320,6 +320,22 @@ const validateProfileId = [
   handleValidationErrors,
 ];
 
+const validateNoteUpload = [
+  body('title')
+    .trim()
+    .notEmpty()
+    .withMessage('Title is required')
+    .isLength({ max: 100 })
+    .withMessage('Title cannot exceed 100 characters'),
+    body('subject')
+    .trim()
+    .notEmpty()
+    .withMessage('Subject is required')
+    .isLength({ max: 50 })
+    .withMessage('Subject cannot exceed 50 characters'),
+     
+];
+
 
 
 export {
@@ -332,5 +348,6 @@ export {
   validateRefreshToken,
   validateForgotPassword,
   validateResetPassword,
+  validateNoteUpload
 
 };
