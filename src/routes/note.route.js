@@ -9,7 +9,7 @@ import { ROLES } from "../constants/rbac.constants.js";
 const router = express.Router();
 
 /**
- * @route   POST /api/notes/upload
+ * @route   POST /api/note/upload
  * @desc    Upload study notes
  * @access  Private (JWT)
  */
@@ -19,5 +19,15 @@ router.post("/upload",
     upload.single("noteFile"),
     validateNoteUpload,
     notesController.uploadNotes);
+
+/**
+ * @route   GET /api/note/
+ * @desc    Get study notes
+ * @access  Private (JWT)
+ */
+router.get("/",
+    authenticateToken,
+    requireRole(ROLES.STUDENT),
+    notesController.getMyNotes);
 
 export default router;

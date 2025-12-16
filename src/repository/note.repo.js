@@ -1,5 +1,6 @@
 import Note from '../models/note.model.js';
 import { HTTP_STATUS, MESSAGES } from '../constants/index.js';
+import mongoose from 'mongoose';
 
 class NoteRepository {
 
@@ -56,11 +57,11 @@ class NoteRepository {
   /**
    * Get notes uploaded by a teacher
    */
-  async findByTeacherId(teacherId) {
+  async findByUser(userId) {
     try {
+     
       const notes = await Note.find({
-        refTeacherId: teacherId,
-        isActive: true
+        userId
       }).sort({ createdAt: -1 });
 
       return {

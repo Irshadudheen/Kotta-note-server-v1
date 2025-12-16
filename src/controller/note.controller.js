@@ -20,7 +20,7 @@ class NotesController {
       const userId = req.user.id;
       const uploaderType = req.user.userType;
       console.log(req.user)
-      const { subject, department,semester,title } = req.body;
+      const { subject, department,semester,title,module ,isPublic                                                                                                                                                                                                                                                                                                                                                        } = req.body;
 
       if (!req.file) {
         return res.status(400).json({
@@ -71,6 +71,8 @@ class NotesController {
         userId,
         semester,
         subject,
+        module,
+        isPublic,
         title,
         uploaderType,
         department,
@@ -105,7 +107,9 @@ class NotesController {
   /**  Get My Notes */
   async getMyNotes(req, res) {
     try {
+ 
       const result = await notesRepository.findByUser(req.user.id);
+    
 
       if (!result.success) {
         return res.status(500).json({
@@ -119,6 +123,7 @@ class NotesController {
         data: result.data,
       });
     } catch (err) {
+      console.error(err);
       return res.status(500).json({
         success: false,
         message: "Internal Server Error",

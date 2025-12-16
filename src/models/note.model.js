@@ -43,6 +43,13 @@ const noteSchema = new mongoose.Schema(
       min: [1, 'Semester must be at least 1'],
       max: [10, 'Semester cannot exceed 10']
     },
+    module: {
+      type: Number,
+      required: [true, 'Module is required'],
+      min: [1, 'Module must be at least 1'],
+      max: [10, 'Module cannot exceed 10']
+    },
+    
 
     noteUrl: {
       type: String,
@@ -52,6 +59,11 @@ const noteSchema = new mongoose.Schema(
       type: String,
       enum: ['active', 'blocked', 'deleted'],
       default: 'active'
+    },
+    isPublic:{
+      type: Boolean,
+      default: false,
+      index: true,
     },
 
     deletedAt: {
