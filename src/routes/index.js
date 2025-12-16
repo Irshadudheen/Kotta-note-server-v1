@@ -16,7 +16,7 @@ router.get('/health', (req, res) => {
 
 // API routes
 router.use('/auth', authRoutes);
-router.use('/notes', noteRoutes)
+router.use('/note', noteRoutes)
 
 router.use('*', (req, res) => {
   res.status(404).json({

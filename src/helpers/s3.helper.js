@@ -4,7 +4,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Initialize S3 client
 const s3Client = new S3Client({
-  region: S3_CONFIG.REGION,
+  region: S3_CONFIG.REGION, // REQUIRED for R2
+  endpoint: S3_CONFIG.ENDPOINT, // 🔥 R2 endpoint
   credentials: {
     accessKeyId: S3_CONFIG.ACCESS_KEY_ID,
     secretAccessKey: S3_CONFIG.SECRET_ACCESS_KEY,
@@ -13,7 +14,6 @@ const s3Client = new S3Client({
 
 export const uploadToS3 = async (fileBuffer, originalName, folder, mimeType) => {
   try {
-    // Generate unique filename
     const fileExtension = originalName.split('.').pop();
     const uniqueFileName = `${uuidv4()}.${fileExtension}`;
     const key = `${folder}/${uniqueFileName}`;
@@ -23,22 +23,19 @@ export const uploadToS3 = async (fileBuffer, originalName, folder, mimeType) => 
       Key: key,
       Body: fileBuffer,
       ContentType: mimeType,
-      ACL: 'public-read', // Make file publicly accessible
     };
 
-    const command = new PutObjectCommand(uploadParams);
-    await s3Client.send(command);
+    await s3Client.send(new PutObjectCommand(uploadParams));
 
-    // Construct public URL
-    const fileUrl = `https://${S3_CONFIG.BUCKET_NAME}.s3.${S3_CONFIG.REGION}.amazonaws.com/${key}`;
+    const fileUrl = `${S3_CONFIG.PUBLIC_BASE_URL}/${key}`;
 
     return {
       success: true,
       url: fileUrl,
-      key: key,
+      key,
     };
   } catch (error) {
-    console.error('S3 upload error:', error);
+    console.error('R2 upload error:', error);
     return {
       success: false,
       error: error.message,
@@ -46,37 +43,26 @@ export const uploadToS3 = async (fileBuffer, originalName, folder, mimeType) => 
   }
 };
 
+
 export const deleteFromS3 = async (fileUrl) => {
   try {
-    if (!fileUrl || !fileUrl.includes('amazonaws.com')) {
-      return {
-        success: true, // Not an S3 URL, consider it successfully "deleted"
-        message: 'Not an S3 URL',
-      };
+    if (!fileUrl?.startsWith(S3_CONFIG.PUBLIC_BASE_URL)) {
+      return { success: true, message: 'Not an R2 URL' };
     }
 
-    // Extract key from URL
-    const urlParts = fileUrl.split('/');
-    const key = urlParts.slice(3).join('/'); // Remove protocol, domain, and bucket name
+    const key = fileUrl.replace(`${S3_CONFIG.PUBLIC_BASE_URL}/`, '');
 
-    const deleteParams = {
-      Bucket: S3_CONFIG.BUCKET_NAME,
-      Key: key,
-    };
+    await s3Client.send(
+      new DeleteObjectCommand({
+        Bucket: S3_CONFIG.BUCKET_NAME,
+        Key: key,
+      })
+    );
 
-    const command = new DeleteObjectCommand(deleteParams);
-    await s3Client.send(command);
-
-    return {
-      success: true,
-      message: 'File deleted successfully',
-    };
+    return { success: true };
   } catch (error) {
-    console.error('S3 delete error:', error);
-    return {
-      success: false,
-      error: error.message,
-    };
+    console.error('R2 delete error:', error);
+    return { success: false, error: error.message };
   }
 };
 
