@@ -65,6 +65,16 @@ const noteSchema = new mongoose.Schema(
       default: false,
       index: true,
     },
+    downloadCount:{
+      type: Number,
+      default: 0,
+      index: true,
+    },
+    viewCount:{
+      type: Number,
+      default: 0,
+      index: true,
+    },
 
     deletedAt: {
       type: Date

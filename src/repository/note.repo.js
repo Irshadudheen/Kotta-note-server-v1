@@ -80,22 +80,42 @@ class NoteRepository {
   /**
    * Search notes (student view)
    */
-  async getAllNotes(page = 1, limit = 10, filters = {}) {
+  async getAllNotes(page = 1, limit = 10, search='') {
     try {
       const skip = (page - 1) * limit;
+      
 
-      const query = { isActive: true };
+       const searchFilter = search 
+    ? {
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { subject: { $regex: search, $options: 'i' } },
+          { department: { $regex: search, $options: 'i' } },
+          
+        ],
+      }
+    : {};
+    console.log(search)
+    console.log(searchFilter)
 
-      if (filters.department) query.department = filters.department;
-      if (filters.subject) query.subject = filters.subject;
-      if (filters.semester) query.semester = filters.semester;
+        // if (filters.semester) {
+        //   query.semester = Number(filters.semester);
+        // }
 
+        // if (filters.module) {
+        //   query.module = Number(filters.module);
+        // }
+      // console.log(searchFilter)
       const [notes, total] = await Promise.all([
-        Note.find(query)
+        Note.find(searchFilter)
+          .populate({
+      path: 'userId',
+      select: 'name' // choose fields you need
+    })
           .sort({ createdAt: -1 })
           .skip(skip)
           .limit(limit),
-        Note.countDocuments(query)
+        Note.countDocuments(searchFilter)
       ]);
 
       return {
@@ -112,6 +132,7 @@ class NoteRepository {
         }
       };
     } catch (error) {
+      console.log(error)
       return {
         success: false,
         error: error.message,
@@ -119,6 +140,58 @@ class NoteRepository {
       };
     }
   }
+
+/**
+ * Increment download count (once per user)
+ */
+async incrementDownloadCount(noteId, userId) {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(noteId)) {
+      return {
+        success: false,
+        error: "Invalid noteId",
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+      };
+    }
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return {
+        success: false,
+        error: "Invalid userId",
+        statusCode: HTTP_STATUS.BAD_REQUEST,
+      };
+    }
+
+    // Try to record user download
+    await NoteDownload.create({ noteId, userId });
+
+    // Increment count only on first download
+    await Note.findByIdAndUpdate(
+      noteId,
+      { $inc: { downloadCount: 1 } },
+      { new: true }
+    );
+
+    return {
+      success: true,
+      counted: true,
+    };
+  } catch (error) {
+    // Duplicate download → already counted
+    if (error.code === 11000) {
+      return {
+        success: true,
+        counted: false,
+      };
+    }
+
+    return {
+      success: false,
+      error: error.message,
+      statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    };
+  }
+}
+  
 
   /**
    * Update note (metadata only)

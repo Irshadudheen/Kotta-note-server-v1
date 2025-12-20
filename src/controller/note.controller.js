@@ -14,6 +14,46 @@ class NotesController {
     this.deleteNote = this.deleteNote.bind(this);
   }
 
+ /** Download Count */
+ async downloadCount(req, res) {
+  try {
+    const { notesId } = req.query;
+    const userId = req.user.id;
+
+    if (!notesId) {
+      return res.status(400).json({
+        success: false,
+        message: "notesId is required",
+      });
+    }
+
+    const result = await notesRepository.incrementDownloadCount(
+      notesId,
+      userId
+    );
+
+    if (!result.success) {
+      return res.status(result.statusCode || 500).json({
+        success: false,
+        message: result.error || "Failed to update download count",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: result.counted
+        ? "Download count updated"
+        : "Download already counted",
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: MESSAGES.ERROR.INTERNAL_SERVER_ERROR,
+      error: err.message,
+    });
+  }
+}
+
   /**  Upload Notes */
   async uploadNotes(req, res) {
     try {
@@ -99,6 +139,34 @@ class NotesController {
       return res.status(500).json({
         success: false,
         message: MESSAGES.ERROR.INTERNAL_SERVER_ERROR,
+        error: err.message,
+      });
+    }
+  }
+
+    /**  Get All Notes */
+    async getAllNotes(req, res) {
+    try {
+      const { page, limit } = req.pagination;
+      const search = req.query.search ;
+
+      console.log(search)
+      const result = await notesRepository.getAllNotes(page, limit,search);
+      if (!result.success) {
+        return res.status(500).json({
+          success: false,
+          message: "Failed to fetch notes",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        data: result.data,
+      });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
         error: err.message,
       });
     }
