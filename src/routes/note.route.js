@@ -26,6 +26,10 @@ router.post("/upload",
  * @desc    Get study notes
  * @access  Private (JWT)
  */
+router.get("/",
+     authenticateToken,
+     paginationMiddleware,
+    notesController.getAllNotes);
 router.get("/downloadcount",
      authenticateToken,
     notesController.downloadCount);
